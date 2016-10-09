@@ -128,7 +128,7 @@ int main(void)
   char charToSend[DATA_TO_SEND_SIZE];
 
 uint8_t check_counter = 0;
-uint8_t blt_counter = 0;
+uint16_t blt_counter = 0;
 for(int i=0;i<22;i++){
 //		 if(i==21){
 //			 charToSend[i]='\0';
@@ -162,7 +162,7 @@ for(int i =0;i<GYRO_CORRECT_ARRAY_NUM;i++)
 	fillDataToSend(charToSend,DATA_TO_SEND_SIZE,*pDataGetZAxis,*pDataGetYAxis,
 			DataGetZAxisAcc,DataGetXAxisAcc);
 
-	 if(!(blt_counter%200))
+	 if(!(blt_counter%500))
 	 HAL_UART_Transmit(&huart2,charToSend,DATA_TO_SEND_SIZE,100);
 	 check_counter++;
 	 check_counter = check_counter % GYRO_CORRECT_ARRAY_NUM;

@@ -6,9 +6,11 @@
  */
 
 #ifndef I2C_SPI_H_
+#define I2C_SPI_H_
+
 #include "stm32f4xx_hal.h"
 
-#define I2C_SPI_H_
+
 
 
 #define LSM303_ACC_ADDRESS (0x19 << 1) // adres akcelerometru: 0011 001x
