@@ -1,6 +1,6 @@
 [PreviousGenFiles]
-HeaderPath=C:/Slawek/Mikrokontrolery/ARM_workspace/EWork/Inc
-SourcePath=C:/Slawek/Mikrokontrolery/ARM_workspace/EWork/Src
+HeaderPath=C:/Users/Mariusz/Desktop/EGlove/EGlove_eclipse/Inc
+SourcePath=C:/Users/Mariusz/Desktop/EGlove/EGlove_eclipse/Src
 SourceFiles=stm32f4xx_it.h;stm32f4xx_hal_conf.h;mxconstants.h;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;
 HeaderFiles=stm32f4xx_it.h;stm32f4xx_hal_conf.h;mxconstants.h;
 

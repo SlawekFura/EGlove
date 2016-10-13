@@ -36,6 +36,7 @@
 /* USER CODE BEGIN Includes */
 #include <math.h>
 #include "I2C_SPI.h"
+#include "pos_calc.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -52,16 +53,25 @@ UART_HandleTypeDef huart2;
 #define GYRO_CORRECT_ARRAY_NUM 7
 #define DATA_TO_SEND_SIZE 22
 
-double DataGetXAxisAcc = 0;
-double DataGetYAxisAcc = 0;
-double DataGetZAxisAcc = 0;
+int16_t DataGetXAxisAcc = 0;
+int16_t DataGetYAxisAcc = 0;
+int16_t DataGetZAxisAcc = 0;
 
-double DataGetXAxis;
-double DataGetYAxis;
-double DataGetZAxis;
-int16_t value = 0;
-static double AngleXAxis = 0;
-static double DataGetXAxisTemp = 0;
+int16_t DataGetXAxis = 0;
+int16_t DataGetYAxis = 0;
+int16_t DataGetZAxis = 0;
+volatile int16_t calcValue = 0;
+
+float ZAverage = 0;
+float XAverage = 0;
+
+static double AngleXAxisAcc = 0;
+static double AngleZAxisAcc = 0;
+
+static double AngleYAxisGyro = 0;
+static double AngleZAxisGyro = 0;
+
+static double AngleYAxisGyroTemp = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,10 +93,11 @@ static void MX_SPI1_Init(void);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  //if(htim->Instance == TIM10){ // Jeżeli przerwanie pochodzi od timera 10
-AngleXAxis += ((DataGetXAxis + DataGetXAxisTemp) / 1013.5 / 2  );//*1.19 ;
-DataGetXAxisTemp = DataGetXAxis;
-// }
-}
+//	AngleYAxisGyro += ((float)(AngleYAxisGyro + AngleYAxisGyroTemp)  );//*1.19 ;
+//	AngleYAxisGyroTemp = AngleYAxisGyro;
+	calcValue++;
+ }
+//}
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -98,7 +109,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+HandPos hand={0};
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -121,19 +132,19 @@ int main(void)
   initGyroSPI(&hspi1);
   initAccI2C(&hi2c1);
 
-  double * pDataGetXAxis = &DataGetXAxis;
-  double * pDataGetYAxis = &DataGetYAxis;
-  double * pDataGetZAxis = &DataGetZAxis;
+  int16_t * pDataGetXAxis = &DataGetXAxis;
+  int16_t * pDataGetYAxis = &DataGetYAxis;
+  int16_t * pDataGetZAxis = &DataGetZAxis;
+
+  int32_t ZCounter = 0;
+  int32_t XCounter = 0;
+
 
   char charToSend[DATA_TO_SEND_SIZE];
 
 uint8_t check_counter = 0;
 uint16_t blt_counter = 0;
 for(int i=0;i<22;i++){
-//		 if(i==21){
-//			 charToSend[i]='\0';
-//			break;
-//		 }
 	 charToSend[i]=(char)(i+65);
 }
 float AccPosArr[GYRO_CORRECT_ARRAY_NUM];
@@ -151,24 +162,27 @@ for(int i =0;i<GYRO_CORRECT_ARRAY_NUM;i++)
 	 getPositionDataACC(&hi2c1, &DataGetXAxisAcc, &DataGetYAxisAcc, &DataGetZAxisAcc,100);
 	 getPositionDataSPI(&hspi1, pDataGetXAxis, pDataGetYAxis, pDataGetZAxis,100);
 
-	 AccPosArr[check_counter] = DataGetXAxisAcc;
-	 for(uint8_t i=0; i<GYRO_CORRECT_ARRAY_NUM; i++){
-		 if((AccPosArr[check_counter] - AccPosArr[i])>0.01 || (AccPosArr[check_counter] - AccPosArr[i])< -0.01)
-			 break;
-	 	 if(i == GYRO_CORRECT_ARRAY_NUM-1)
-	 		AngleXAxis = AccPosArr[check_counter];
-	 }
 
-	fillDataToSend(charToSend,DATA_TO_SEND_SIZE,*pDataGetZAxis,*pDataGetYAxis,
-			DataGetZAxisAcc,DataGetXAxisAcc);
-
-	 if(!(blt_counter%500))
-	 HAL_UART_Transmit(&huart2,charToSend,DATA_TO_SEND_SIZE,100);
-	 check_counter++;
-	 check_counter = check_counter % GYRO_CORRECT_ARRAY_NUM;
-	 value ++;
-	 blt_counter++;
-
+//	fillDataToSend(charToSend,DATA_TO_SEND_SIZE,*pDataGetZAxis,*pDataGetYAxis,
+//			DataGetZAxisAcc,DataGetXAxisAcc);
+//	fillHandPos(&hand,DataGetXAxisAcc,DataGetYAxisAcc,*pDataGetYAxis,*pDataGetZAxis,& calcValue);
+//
+//	 if(!(blt_counter%500))
+//	 HAL_UART_Transmit(&huart2,charToSend,DATA_TO_SEND_SIZE,100);
+//	 check_counter++;
+//	 check_counter = check_counter % GYRO_CORRECT_ARRAY_NUM;
+//	// value ++;
+//	 blt_counter++;
+//
+//	 AngleXAxisAcc = hand.angleAccX;
+//	 AngleZAxisAcc = hand.angleAccZ;
+////	 AngleYAxisGyro = hand.angleGyroY;
+//	 AngleZAxisGyro = hand.angleGyroZ;
+		AngleYAxisGyro += (float)((*pDataGetXAxis))/10000;//*1.19 ;
+		AngleZAxisGyro += ((float)((*pDataGetZAxis)-(*pDataGetZAxis)%200))/100000;
+		ZCounter++; XCounter++;
+		ZAverage = (float)((ZCounter-1) * ZAverage + (*pDataGetZAxis))/ZCounter;
+		XAverage = (float)((XCounter-1) * XAverage + (*pDataGetXAxis))/XCounter;
   }
   /* USER CODE END 3 */
 
@@ -267,9 +281,9 @@ static void MX_TIM10_Init(void)
 {
 
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 99;
+  htim10.Init.Prescaler = 19;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 39;
+  htim10.Init.Period = 10;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
   {
