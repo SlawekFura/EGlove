@@ -41,16 +41,16 @@ HAL_StatusTypeDef initGyroSPI(SPI_HandleTypeDef *hspi){
 	return HAL_ERROR;
 }
 
-void getPositionDataACC(I2C_HandleTypeDef *hi2c, int *pDataGetXAxis,
-		int *pDataGetYAxis,  int *pDataGetZAxis, uint32_t Timeout){
+void getPositionDataACC(I2C_HandleTypeDef *hi2c, int16_t *pDataGetXAxis,
+		int16_t *pDataGetYAxis,  int16_t *pDataGetZAxis, uint32_t Timeout){
 
-	uint8_t tempLow = 0, tempHigh = 0;
-	int16_t tempInt = 0;
+	uint8_t tempLow, tempHigh;
+	int16_t tempInt;
 
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_X_H, 1, &tempHigh, 1, 100);
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_X_L, 1, &tempLow, 1, 100);
 	 tempInt = (tempHigh << 8) | tempLow;
-	 *pDataGetYAxis = tempInt;
+	 *pDataGetXAxis = tempInt;
 //	 if((float)tempInt/(INT16_MAX)*2>1)
 //	 	*pDataGetYAxis = asin(1);
 //	 else if((float)tempInt/(INT16_MAX)*2<-1)
@@ -64,7 +64,7 @@ void getPositionDataACC(I2C_HandleTypeDef *hi2c, int *pDataGetXAxis,
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_Y_L, 1, &tempLow, 1, 100);
 	 tempInt = (tempHigh << 8) | tempLow;
 
-	 *pDataGetXAxis = tempInt;
+	 *pDataGetYAxis = tempInt;
 //	 if((float)tempInt/(INT16_MAX)*2>1)
 //	 	*pDataGetXAxis = asin(-1);
 //	 else if((float)tempInt/(INT16_MAX)*2<-1)

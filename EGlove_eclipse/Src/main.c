@@ -60,18 +60,24 @@ int16_t DataGetZAxisAcc = 0;
 int16_t DataGetXAxis = 0;
 int16_t DataGetYAxis = 0;
 int16_t DataGetZAxis = 0;
-volatile int16_t calcValue = 0;
+
+int16_t * pDataGetXAxis = &DataGetYAxis;
+int16_t * pDataGetYAxis = &DataGetYAxis;
+int16_t * pDataGetZAxis = &DataGetZAxis;
+
+HandPos hand={0};
+volatile int32_t calcValue = 0;
 
 float ZAverage = 0;
 float XAverage = 0;
 
-static double AngleXAxisAcc = 0;
+static double AngleYAxisAcc = 0;
 static double AngleZAxisAcc = 0;
 
+static double AngleXAxisGyro = 0;
 static double AngleYAxisGyro = 0;
 static double AngleZAxisGyro = 0;
 
-static double AngleYAxisGyroTemp = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,9 +99,12 @@ static void MX_SPI1_Init(void);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  //if(htim->Instance == TIM10){ // Jeżeli przerwanie pochodzi od timera 10
-//	AngleYAxisGyro += ((float)(AngleYAxisGyro + AngleYAxisGyroTemp)  );//*1.19 ;
-//	AngleYAxisGyroTemp = AngleYAxisGyro;
-	calcValue++;
+	fillHandPos(&hand,DataGetYAxisAcc,DataGetZAxisAcc,*pDataGetXAxis,*pDataGetYAxis,*pDataGetZAxis);
+	AngleXAxisGyro = hand.angleGyroX;
+	AngleYAxisGyro = hand.angleGyroY;
+	AngleZAxisGyro = hand.angleGyroZ;
+	AngleYAxisAcc = hand.angleAccY;
+	AngleZAxisAcc = hand.angleAccZ;
  }
 //}
 /* USER CODE END PFP */
@@ -109,7 +118,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-HandPos hand={0};
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -133,8 +142,8 @@ HandPos hand={0};
   initAccI2C(&hi2c1);
 
   int16_t * pDataGetXAxis = &DataGetXAxis;
-  int16_t * pDataGetYAxis = &DataGetYAxis;
-  int16_t * pDataGetZAxis = &DataGetZAxis;
+//  int16_t * pDataGetYAxis = &DataGetYAxis;
+//  int16_t * pDataGetZAxis = &DataGetZAxis;
 
   int32_t ZCounter = 0;
   int32_t XCounter = 0;
@@ -178,11 +187,13 @@ for(int i =0;i<GYRO_CORRECT_ARRAY_NUM;i++)
 //	 AngleZAxisAcc = hand.angleAccZ;
 ////	 AngleYAxisGyro = hand.angleGyroY;
 //	 AngleZAxisGyro = hand.angleGyroZ;
-		AngleYAxisGyro += (float)((*pDataGetXAxis))/10000;//*1.19 ;
-		AngleZAxisGyro += ((float)((*pDataGetZAxis)-(*pDataGetZAxis)%200))/100000;
-		ZCounter++; XCounter++;
-		ZAverage = (float)((ZCounter-1) * ZAverage + (*pDataGetZAxis))/ZCounter;
-		XAverage = (float)((XCounter-1) * XAverage + (*pDataGetXAxis))/XCounter;
+	//	AngleYAxisGyro += ((float)((*pDataGetYAxis)))*calcValue/INT16_MAX*2/10000;//*1.19 ;
+//		AngleZAxisGyro += ((float)((*pDataGetZAxis)-(*pDataGetZAxis)%200))*calcValue/INT16_MAX*2/1000;
+//		calcValue=0;
+//		ZCounter++; XCounter++;
+//		ZAverage = (float)((ZCounter-1) * ZAverage + (*pDataGetZAxis))/ZCounter;
+//		XAverage = (float)((XCounter-1) * XAverage + (*pDataGetXAxis))/XCounter;
+
   }
   /* USER CODE END 3 */
 
@@ -240,7 +251,7 @@ static void MX_I2C1_Init(void)
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.OwnAddress1 = 2;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -281,9 +292,9 @@ static void MX_TIM10_Init(void)
 {
 
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 19;
+  htim10.Init.Prescaler = 100;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 10;
+  htim10.Init.Period = 19;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
   {

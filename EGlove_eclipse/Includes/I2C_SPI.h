@@ -43,8 +43,8 @@ uint8_t * pSendSPI[9];
 HAL_StatusTypeDef initAccI2C(I2C_HandleTypeDef * hi2c);
 HAL_StatusTypeDef initGyroSPI(SPI_HandleTypeDef *hspi);
 
-void getPositionDataACC(I2C_HandleTypeDef *hi2c, int *pDataGetXAxis,
-		int *pDataGetYAxis,  int *pDataGetZAxis, uint32_t Timeout);
+void getPositionDataACC(I2C_HandleTypeDef *hi2c, int16_t *pDataGetXAxis,
+		int16_t *pDataGetYAxis,  int16_t *pDataGetZAxis, uint32_t Timeout);
 
 void getPositionDataSPI(SPI_HandleTypeDef *hspi, int16_t *pDataGetXAxis,
 		int16_t *pDataGetYAxis,  int16_t *pDataGetZAxis, uint32_t Timeout);
