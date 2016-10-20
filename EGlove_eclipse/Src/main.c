@@ -61,7 +61,7 @@ int16_t DataGetXAxis = 0;
 int16_t DataGetYAxis = 0;
 int16_t DataGetZAxis = 0;
 
-int16_t * pDataGetXAxis = &DataGetYAxis;
+int16_t * pDataGetXAxis = &DataGetXAxis;
 int16_t * pDataGetYAxis = &DataGetYAxis;
 int16_t * pDataGetZAxis = &DataGetZAxis;
 
@@ -71,6 +71,7 @@ volatile int32_t calcValue = 0;
 float ZAverage = 0;
 float XAverage = 0;
 
+static double AngleXAxisAcc = 0;
 static double AngleYAxisAcc = 0;
 static double AngleZAxisAcc = 0;
 
@@ -99,10 +100,12 @@ static void MX_SPI1_Init(void);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  //if(htim->Instance == TIM10){ // Jeżeli przerwanie pochodzi od timera 10
-	fillHandPos(&hand,DataGetYAxisAcc,DataGetZAxisAcc,*pDataGetXAxis,*pDataGetYAxis,*pDataGetZAxis);
+	fillHandPos(&hand,DataGetXAxisAcc,DataGetYAxisAcc,DataGetZAxisAcc,*pDataGetXAxis,*pDataGetYAxis,*pDataGetZAxis);
 	AngleXAxisGyro = hand.angleGyroX;
 	AngleYAxisGyro = hand.angleGyroY;
 	AngleZAxisGyro = hand.angleGyroZ;
+
+	AngleXAxisAcc = hand.angleAccX;
 	AngleYAxisAcc = hand.angleAccY;
 	AngleZAxisAcc = hand.angleAccZ;
  }
@@ -141,7 +144,7 @@ int main(void)
   initGyroSPI(&hspi1);
   initAccI2C(&hi2c1);
 
-  int16_t * pDataGetXAxis = &DataGetXAxis;
+//  int16_t * pDataGetXAxis = &DataGetXAxis;
 //  int16_t * pDataGetYAxis = &DataGetYAxis;
 //  int16_t * pDataGetZAxis = &DataGetZAxis;
 
@@ -294,7 +297,7 @@ static void MX_TIM10_Init(void)
   htim10.Instance = TIM10;
   htim10.Init.Prescaler = 100;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 19;
+  htim10.Init.Period = 159;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
   {
