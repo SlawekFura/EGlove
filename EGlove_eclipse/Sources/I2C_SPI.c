@@ -186,5 +186,29 @@ void fillDataToSend(char *arr,int arrSize,const float gyroX,const float gyroY,
 	}
 }
 
+void fillDataToSendNew(char *arr,int16_t arrSize,const int16_t posX,const int16_t posY){
+for(int i = 0;;){
+		if(i>=arrSize)
+			break;
+		if(i==0)arr[i]='G';
+		if(i==1)arr[i]='X';
+		if(i==6)arr[i]='Y';
+		if(i>=11)arr[i]='A';
+		i++;
+		if(i==2)
+			for(int j=0;j<4;j++){
+				int16_t k = (int16_t)(posX/pow(10,3-j))%10;
+					itoa(abs(k),arr+i,10);
+				i++;
+			};
+		if(i==7)
+			for(int j=0;j<4;j++){
+				int16_t k = (int16_t)(posY/pow(10,3-j))%10;
+					itoa(abs(k),arr+i,10);
+				i++;
+			};
+
+	}
+}
 
 

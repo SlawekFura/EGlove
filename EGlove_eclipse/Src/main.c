@@ -176,15 +176,16 @@ for(int i =0;i<GYRO_CORRECT_ARRAY_NUM;i++)
 
 
 //	fillDataToSend(charToSend,DATA_TO_SEND_SIZE,*pDataGetZAxis,*pDataGetYAxis,
-//			DataGetZAxisAcc,DataGetXAxisAcc);
+	//		DataGetZAxisAcc,DataGetXAxisAcc);
+	 fillDataToSendNew(charToSend,DATA_TO_SEND_SIZE,(int16_t)hand.posX, (int16_t)hand.posY);
 //	fillHandPos(&hand,DataGetXAxisAcc,DataGetYAxisAcc,*pDataGetYAxis,*pDataGetZAxis,& calcValue);
 //
-//	 if(!(blt_counter%500))
-//	 HAL_UART_Transmit(&huart2,charToSend,DATA_TO_SEND_SIZE,100);
+	 if(!(blt_counter%3))
+	 HAL_UART_Transmit(&huart2,charToSend,DATA_TO_SEND_SIZE,50);
 //	 check_counter++;
 //	 check_counter = check_counter % GYRO_CORRECT_ARRAY_NUM;
 //	// value ++;
-//	 blt_counter++;
+	 blt_counter++;
 //
 //	 AngleXAxisAcc = hand.angleAccX;
 //	 AngleZAxisAcc = hand.angleAccZ;

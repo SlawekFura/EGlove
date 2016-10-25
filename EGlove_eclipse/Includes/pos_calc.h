@@ -36,9 +36,10 @@ typedef struct {
 	int16_t gravElemX;
 	int16_t gravElemZ;
 
-
-	float posX;
-	float posY;
+	float velX, velXPrev, velXAvg, velXAvgArr[ACC_CORRECTION_SIZE];
+	float velY, velYPrev, velYAvg, velYAvgArr[ACC_CORRECTION_SIZE];
+	float posX, posXPrev;
+	float posY, posYPrev;
 }HandPos;
 
 void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,int16_t vgyroX, int16_t vgyroY,

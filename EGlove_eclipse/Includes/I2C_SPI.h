@@ -52,6 +52,7 @@ void getPositionDataSPI(SPI_HandleTypeDef *hspi, int16_t *pDataGetXAxis,
 void fillDataToSend(char *arr,int arrSize,const float gyroX,const float gyroY,
 		const float accX,const float accY);
 
+void fillDataToSendNew(char *arr, int16_t arrSize,const int16_t posX,const int16_t posY);
 
 
 #endif /* I2C_SPI_H_ */
