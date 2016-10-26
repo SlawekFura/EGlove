@@ -175,28 +175,11 @@ for(int i =0;i<GYRO_CORRECT_ARRAY_NUM;i++)
 	 getPositionDataSPI(&hspi1, pDataGetXAxis, pDataGetYAxis, pDataGetZAxis,100);
 
 
-//	fillDataToSend(charToSend,DATA_TO_SEND_SIZE,*pDataGetZAxis,*pDataGetYAxis,
-	//		DataGetZAxisAcc,DataGetXAxisAcc);
-	 fillDataToSendNew(charToSend,DATA_TO_SEND_SIZE,(int16_t)hand.posX, (int16_t)hand.posY);
-//	fillHandPos(&hand,DataGetXAxisAcc,DataGetYAxisAcc,*pDataGetYAxis,*pDataGetZAxis,& calcValue);
-//
+	 fillDataToSend(charToSend,DATA_TO_SEND_SIZE, &hand);
+
 	 if(!(blt_counter%3))
 	 HAL_UART_Transmit(&huart2,charToSend,DATA_TO_SEND_SIZE,50);
-//	 check_counter++;
-//	 check_counter = check_counter % GYRO_CORRECT_ARRAY_NUM;
-//	// value ++;
 	 blt_counter++;
-//
-//	 AngleXAxisAcc = hand.angleAccX;
-//	 AngleZAxisAcc = hand.angleAccZ;
-////	 AngleYAxisGyro = hand.angleGyroY;
-//	 AngleZAxisGyro = hand.angleGyroZ;
-	//	AngleYAxisGyro += ((float)((*pDataGetYAxis)))*calcValue/INT16_MAX*2/10000;//*1.19 ;
-//		AngleZAxisGyro += ((float)((*pDataGetZAxis)-(*pDataGetZAxis)%200))*calcValue/INT16_MAX*2/1000;
-//		calcValue=0;
-//		ZCounter++; XCounter++;
-//		ZAverage = (float)((ZCounter-1) * ZAverage + (*pDataGetZAxis))/ZCounter;
-//		XAverage = (float)((XCounter-1) * XAverage + (*pDataGetXAxis))/XCounter;
 
   }
   /* USER CODE END 3 */
@@ -255,7 +238,7 @@ static void MX_I2C1_Init(void)
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 2;
+  hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -296,7 +279,7 @@ static void MX_TIM10_Init(void)
 {
 
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 100;
+  htim10.Init.Prescaler = 19;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim10.Init.Period = 159;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -352,6 +335,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 

@@ -51,38 +51,16 @@ void getPositionDataACC(I2C_HandleTypeDef *hi2c, int16_t *pDataGetXAxis,
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_X_L, 1, &tempLow, 1, 100);
 	 tempInt = (tempHigh << 8) | tempLow;
 	 *pDataGetXAxis = tempInt;
-//	 if((float)tempInt/(INT16_MAX)*2>1)
-//	 	*pDataGetYAxis = asin(1);
-//	 else if((float)tempInt/(INT16_MAX)*2<-1)
-//	 	*pDataGetYAxis = asin(-1);
-//	 else
-//	 	*pDataGetYAxis = (asin((float)tempInt/(INT16_MAX)*2));
-
-
 
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_Y_H, 1, &tempHigh, 1, 100);
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_Y_L, 1, &tempLow, 1, 100);
 	 tempInt = (tempHigh << 8) | tempLow;
-
 	 *pDataGetYAxis = tempInt;
-//	 if((float)tempInt/(INT16_MAX)*2>1)
-//	 	*pDataGetXAxis = asin(-1);
-//	 else if((float)tempInt/(INT16_MAX)*2<-1)
-//	 	*pDataGetXAxis = asin(1);
-//	 else
-//	 	*pDataGetXAxis = -(asin((float)tempInt/(INT16_MAX)*2));
 
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_Z_H, 1, &tempHigh, 1, 100);
 	 HAL_I2C_Mem_Read(hi2c, LSM303_ACC_ADDRESS, LSM303_ACC_Z_L, 1, &tempLow, 1, 100);
 	 tempInt = (tempHigh << 8) | tempLow;
 	 *pDataGetZAxis = tempInt;
-//	 if((float)tempInt/(INT16_MAX)*2>1)
-//	 	*pDataGetZAxis = asin(-1);
-//	 else if((float)tempInt/(INT16_MAX)*2<-1)
-//	 	*pDataGetZAxis = asin(1);
-//	 else
-//	 	*pDataGetZAxis = -(asin((float)tempInt/(INT16_MAX)*2));
-
 
 }
 
@@ -96,119 +74,16 @@ void getPositionDataSPI(SPI_HandleTypeDef *hspi,  int16_t * pDataGetXAxis,
 	HAL_SPI_Transmit(hspi,*pSendSPI + 2,1,100);
 
 	HAL_SPI_Receive(hspi,pDataGetAxisTemp1,2,100);
-	//*pDataGetXAxis =(double)(*pDataGetAxisTemp2)/130.55*3.1415/180 +0.034;///INT16_MAX;//36/25/2/3.1415;
 	*pDataGetXAxis = *pDataGetAxisTemp1;
 
 	HAL_SPI_Receive(hspi,pDataGetAxisTemp1,2,100);
-	//*pDataGetYAxis = (double)*pDataGetAxisTemp2/INT16_MAX*2*3.1415;
 	*pDataGetYAxis = *pDataGetAxisTemp1;
 
 	HAL_SPI_Receive(hspi,pDataGetAxisTemp1,2,100);
-//	*pDataGetZAxis = (double)*pDataGetAxisTemp2/INT16_MAX*2*3.1415;
 	*pDataGetZAxis = *pDataGetAxisTemp1;
 
 	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_3,SET);
 }
 
-void fillDataToSend(char *arr,int arrSize,const float gyroX,const float gyroY,
-		const float accX,const float accY){
-	for(int i = 0;;){
-		if(i>=arrSize)
-			break;
-		if(i==0)arr[i]='G';
-		if(i==1)arr[i]='X';
-		if(i==6)arr[i]='Y';
-		if(i==11)arr[i]='A';
-		if(i==12)arr[i]='X';
-		if(i==17)arr[i]='Y';
-		i++;
-		if(i==2)
-			for(int j=0;j<4;j++){
-				int m = j;
-				if(j>0&gyroX<0)
-					m--;
-				int k = (int)(gyroX*pow(10,m))%10;
-				if(j==0&&gyroX<0){
-					arr[i]='-';
-					itoa(abs(k),arr+i+1,10);
-					i++;j++;
-				}
-				else
-					itoa(abs(k),arr+i,10);
-				i++;
-			};
-		if(i==7)
-			for(int j=0;j<4;j++){
-				int m = j;
-				if(j>0&&gyroY<0)
-					m--;
-				int k = (int)(gyroY*pow(10,m))%10;
-				if(j==0&&gyroY<0){
-					arr[i]='-';
-					itoa(abs(k),arr+i+1,10);
-					i++;j++;
-				}
-				else
-					itoa(abs(k),arr+i,10);
-				i++;
-			};
-		if(i==13)
-			for(int j=0;j<4;j++){
-				int m = j;
-				if(j>0&&accX<0)
-					m--;
-				int k = (int)(accX*pow(10,m))%10;
-				if(j==0&&accX<0){
-					arr[i]='-';
-					itoa(abs(k),arr+i+1,10);
-					i++;j++;
-				}
-				else
-					itoa(abs(k),arr+i,10);
-				i++;
-			};
-		if(i==18)
-			for(int j=0;j<4;j++){
-				int m = j;
-				if(j>0&&accY<0)
-					m--;
-				int k = (int)(accY*pow(10,m))%10;
-				if(j==0&&accY<0){
-					arr[i]='-';
-					itoa(abs(k),arr+i+1,10);
-					i++;j++;
-				}
-				else
-					itoa(abs(k),arr+i,10);
-				i++;
-			};
-
-	}
-}
-
-void fillDataToSendNew(char *arr,int16_t arrSize,const int16_t posX,const int16_t posY){
-for(int i = 0;;){
-		if(i>=arrSize)
-			break;
-		if(i==0)arr[i]='G';
-		if(i==1)arr[i]='X';
-		if(i==6)arr[i]='Y';
-		if(i>=11)arr[i]='A';
-		i++;
-		if(i==2)
-			for(int j=0;j<4;j++){
-				int16_t k = (int16_t)(posX/pow(10,3-j))%10;
-					itoa(abs(k),arr+i,10);
-				i++;
-			};
-		if(i==7)
-			for(int j=0;j<4;j++){
-				int16_t k = (int16_t)(posY/pow(10,3-j))%10;
-					itoa(abs(k),arr+i,10);
-				i++;
-			};
-
-	}
-}
 
 
