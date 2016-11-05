@@ -11,7 +11,8 @@
 
 
 void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,
-		        int16_t vgyroX,	int16_t vgyroY, int16_t vgyroZ){
+		        int16_t vgyroX,	int16_t vgyroY, int16_t vgyroZ,
+				ADC_HandleTypeDef * vhandADC/*, int16_t vvalADC*/){
 	vhand->accX = vaccX;
 	vhand->accY = vaccY;
 	vhand->accZ = vaccZ;
@@ -80,8 +81,8 @@ void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,
 //	rotateCoordinate(vaccY ,vaccZ, &vhand->accYRot, &vhand->accZRot,vhand->angleGyroX);
 //	rotateCoordinate(vhand->accZRot ,vaccX, &vhand->accZRot, &vhand->accXRot,vhand->angleGyroY);
 
-	vhand->posX -= (((float)vgyroZ+ vhand->posXPrev + 245)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19)*250;
-	vhand->posY -= (((float)vgyroY+ vhand->posYPrev - 55)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19 )*250;
+	vhand->posX -= (((float)vgyroZ+ vhand->posXPrev + 170)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19)*250;
+	vhand->posY -= (((float)vgyroY+ vhand->posYPrev - 40)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19 )*250;
 
 	vhand->posXPrev = (float)vgyroZ;
 	vhand->posYPrev = (float)vgyroY;
@@ -90,6 +91,10 @@ void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,
 	if(vhand->posY > 768)		vhand->posY = 768;
 	if(vhand->posX < 0)	vhand->posX = 0;
 	if(vhand->posY < 0)	vhand->posY = 0;
+
+	// if (HAL_ADC_PollForConversion(vhandADC, 1) == HAL_OK)
+		 vhand->valADC = HAL_ADC_GetValue(vhandADC);
+	 HAL_ADC_Start(vhandADC);
 
 //	vhand->velX +=(((float)(/*vhand->accYRot*/vaccY + vhand->velXPrev)))/INT16_MAX/TIMER_PRESCALER;
 //	vhand->velY +=((float)(/*vhand->accZRot*/vaccZ + vhand->velYPrev)/2 - INT16_MAX/2)/INT16_MAX/TIMER_PRESCALER;
@@ -126,8 +131,9 @@ for(int i = 0;;){
 		if(i==0)arr[i]='G';
 		if(i==1)arr[i]='X';
 		if(i==6)arr[i]='Y';
-		if(i>=13)arr[i]='A';
 		if(i==11)arr[i]='L';
+		if(i==13)arr[i]='V';
+		if(i>=18)arr[i]='A';
 		i++;
 		if(i==2)
 			for(int j=0;j<4;j++){
@@ -145,6 +151,12 @@ for(int i = 0;;){
 			itoa(abs(vhand->leftButtonState),arr+i,10);
 			i++;
 		}
+		if(i==14)
+		for(int j=0;j<4;j++){
+			int16_t k = (int16_t)(vhand->valADC/pow(10,3-j))%10;
+			itoa(abs(k),arr+i,10);
+			i++;
+		};
 
 	}
 }

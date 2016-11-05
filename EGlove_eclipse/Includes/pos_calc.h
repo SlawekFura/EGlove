@@ -8,6 +8,8 @@
 #define TIMER_PRESCALER 125
 
 typedef struct {
+	int16_t valADC;
+
 	int16_t accX;
 	int16_t accY;
 	int16_t accZ;
@@ -45,7 +47,7 @@ typedef struct {
 }HandPos;
 
 void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,int16_t vgyroX, int16_t vgyroY,
-		int16_t vgyroZ);
+		int16_t vgyroZ, ADC_HandleTypeDef * vhandADC/*, int16_t vvalADC*/);
 char* dataToSend(HandPos vhand);
 void rotateCoordinate(int16_t vaccA, int16_t vaccB,int16_t *vaccARot, int16_t *vaccBRot, float vangleRotAxis);
 void fillDataToSend(char *arr,int16_t arrSize,HandPos * vhand);
