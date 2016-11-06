@@ -5,35 +5,31 @@
 
 #define ACC_CORRECTION_SIZE 20
 #define ACC_CORRECTION_FACTOR 70
+#define ADC_SCROLL_ARR_SIZE 1000
+#define ADC_UPPER_LIMIT 2300
+#define ADC_LOWER_LIMIT 500
 #define TIMER_PRESCALER 125
 
 typedef struct {
-	int16_t valADC;
+	int16_t valADC[ADC_SCROLL_ARR_SIZE];
+	int16_t valADCavg;
+	int16_t valADCavgTemp0;
+	int16_t valADCavgTemp1;
+	int16_t valADCavgTempOUT;
+	int16_t ADCCount;
 
-	int16_t accX;
-	int16_t accY;
-	int16_t accZ;
-	int16_t accXRot;
-	int16_t accYRot;
-	int16_t accZRot;
-	float angleAccY;
-	float angleAccX;
-	float angleAccZ;
+	int16_t accX, accY, accZ;
+	int16_t accXRot, accYRot, accZRot;
+	float angleAccY, angleAccX, angleAccZ;
 
-	int16_t sinGAccX;
-	int16_t sinGAccY;
-	int16_t sinGAccZ;
+	int16_t sinGAccX, sinGAccY, sinGAccZ;
 	int16_t corrAccDataX[ACC_CORRECTION_SIZE];
 	int16_t corrAccDataY[ACC_CORRECTION_SIZE];
 	int16_t corrAccDataZ[ACC_CORRECTION_SIZE];
-	uint8_t accXCount, accYCount, accZCount;
+	uint8_t accCount;
 
-	int16_t gyroX;
-	int16_t gyroY;
-	int16_t gyroZ;
-	float angleGyroX;
-	float angleGyroY;
-	float angleGyroZ;
+	int16_t gyroX, gyroY, gyroZ;
+	float angleGyroX, angleGyroY, angleGyroZ;
 
 	int16_t gravElemX;
 	int16_t gravElemZ;

@@ -16,15 +16,11 @@ void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,
 	vhand->accX = vaccX;
 	vhand->accY = vaccY;
 	vhand->accZ = vaccZ;
-	vhand->accXCount++;
-	vhand->accYCount++;
-	vhand->accZCount++;
-	vhand->accXCount %= ACC_CORRECTION_SIZE;
-	vhand->accYCount %= ACC_CORRECTION_SIZE;
-	vhand->accZCount %= ACC_CORRECTION_SIZE;
-	vhand->corrAccDataX[vhand->accXCount] = vaccX;
-	vhand->corrAccDataY[vhand->accYCount] = vaccY;
-	vhand->corrAccDataZ[vhand->accZCount] = vaccZ;// - INT16_MAX>>1;
+	vhand->accCount++;
+	vhand->accCount %= ACC_CORRECTION_SIZE;
+	vhand->corrAccDataX[vhand->accCount] = vaccX;
+	vhand->corrAccDataY[vhand->accCount] = vaccY;
+	vhand->corrAccDataZ[vhand->accCount] = vaccZ;
 	vhand->leftButtonState = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0);
 
 //	for(int i=0;i<ACC_CORRECTION_SIZE;i++){
@@ -73,13 +69,8 @@ void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,
 //				 }
 //			}
 //	}
-//
-//	vhand->angleGyroX += ((float)vgyroX+vhand->angleGyroX + 110)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19;
-//	vhand->angleGyroY += ((float)vgyroY+vhand->angleGyroY-35)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19;
-//	vhand->angleGyroZ += ((float)vgyroZ+vhand->angleGyroZ + 100)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19;
-//
-//	rotateCoordinate(vaccY ,vaccZ, &vhand->accYRot, &vhand->accZRot,vhand->angleGyroX);
-//	rotateCoordinate(vhand->accZRot ,vaccX, &vhand->accZRot, &vhand->accXRot,vhand->angleGyroY);
+
+
 
 	vhand->posX -= (((float)vgyroZ+ vhand->posXPrev + 170)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19)*250;
 	vhand->posY -= (((float)vgyroY+ vhand->posYPrev - 40)/INT16_MAX*250*3.1415/180/TIMER_PRESCALER*1.19 )*250;
@@ -93,8 +84,26 @@ void fillHandPos(HandPos * vhand,int16_t vaccX,int16_t vaccY,int16_t vaccZ,
 	if(vhand->posY < 0)	vhand->posY = 0;
 
 	// if (HAL_ADC_PollForConversion(vhandADC, 1) == HAL_OK)
-		 vhand->valADC = HAL_ADC_GetValue(vhandADC);
-	 HAL_ADC_Start(vhandADC);
+	vhand->ADCCount++;
+	vhand->ADCCount %= ADC_SCROLL_ARR_SIZE;
+
+	if(!(vhand->ADCCount % 100 && ((vhand->valADCavg = HAL_ADC_GetValue(vhandADC)) > ADC_LOWER_LIMIT )
+		&& vhand->valADCavg < ADC_UPPER_LIMIT)){
+		vhand->valADCavgTemp0 = vhand->valADCavgTemp1;
+		vhand->valADCavgTemp1 = vhand->valADCavg;
+		if(vhand->valADCavgTemp0 < ADC_LOWER_LIMIT)
+			vhand->valADCavgTempOUT = 0;
+		vhand->valADCavgTempOUT = vhand->valADCavgTemp1 - vhand->valADCavgTemp0;
+		HAL_ADC_Start(vhandADC);
+	}
+
+//	if(vhand->ADCCount == 1){
+//		vhand->valADCavg = 0;
+//		for(int i = 1; i<ADC_SCROLL_ARR_SIZE ; i++){
+//			vhand->valADCavg += (vhand->valADC[i] - vhand->valADC[i-1]);
+//		}
+//	}
+	//vhand->valADCavg /= ADC_SCROLL_ARR_SIZE;
 
 //	vhand->velX +=(((float)(/*vhand->accYRot*/vaccY + vhand->velXPrev)))/INT16_MAX/TIMER_PRESCALER;
 //	vhand->velY +=((float)(/*vhand->accZRot*/vaccZ + vhand->velYPrev)/2 - INT16_MAX/2)/INT16_MAX/TIMER_PRESCALER;
@@ -153,9 +162,28 @@ for(int i = 0;;){
 		}
 		if(i==14)
 		for(int j=0;j<4;j++){
-			int16_t k = (int16_t)(vhand->valADC/pow(10,3-j))%10;
-			itoa(abs(k),arr+i,10);
-			i++;
+			int m = j;
+			if(j>0&&vhand->valADCavgTempOUT<0)
+				m--;
+			int k = (int16_t)(vhand->valADCavgTempOUT/pow(10,2-m))%10;
+
+			if(j==0&&vhand->valADCavgTempOUT<0){
+				arr[i]='-';
+				itoa(abs(k),arr+i+1,10);
+				i++;j++;
+			}
+			else if(j==0&&vhand->valADCavgTempOUT>=0){
+				arr[i]='0';
+				itoa(abs(k),arr+i+1,10);
+				i++;j++;
+			}
+			else{
+				i++;
+				itoa(abs(k),arr+i,10);
+			}
+//			int16_t k = (int16_t)(vhand->valADCavgTempOUT/pow(10,3-j))%10;
+//			itoa(abs(k),arr+i,10);
+//			i++;
 		};
 
 	}
